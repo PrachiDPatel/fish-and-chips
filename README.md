@@ -4,6 +4,8 @@
 
 Mobile web remote for joseph — a pleco catfish-shaped LED light in my room, running WLED on an ESP32 over WiFi.
 
+**[→ Try it live](https://prachidpatel.github.io/fish-and-chips/)**
+
 ---
 
 ## How it works
@@ -34,7 +36,7 @@ Built mobile-first, meant to be used from your phone while lying in bed.
 
 This repo is a template — the real broker URL and WLED topic are not committed.
 
-1. Open `Pleco-v2.html` locally
+1. Open `index.html` locally
 2. Fill in the `CONFIG` block at the top of the script:
    ```js
    const BROKER = 'wss://your-broker.com:8084/mqtt';
