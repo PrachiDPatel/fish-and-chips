@@ -1,13 +1,21 @@
 /* ===== Snake game =====
- * Playfield: body LEDs 5-28 (6 cols × 4 rows, col 0 = tail end, col 5 = head end)
- * Tick: 2 s to accommodate ~1 s MQTT latency
- * LED mapping: snakeLED(row, col) = 5 + col*4 + row
+ * Playfield: 4 cols × 3 rows, using physically calibrated LED indices.
+ * Cols go head→tail (left→right on fish). Rows go dorsal→ventral (top→bottom).
+ * All 12 LEDs confirmed by video calibration (blue-LED frame detection).
+ * Tick: 2 s to accommodate ~1 s MQTT latency.
  */
-const SNAKE_COLS = 6;
-const SNAKE_ROWS = 4;
+const SNAKE_COLS = 4;
+const SNAKE_ROWS = 3;
 const SNAKE_TICK = 2000;
 
-function snakeLED(row, col) { return 5 + col * 4 + row; }
+// [row][col] → physical LED index. Row 0 = top, Col 0 = head side.
+const SNAKE_MAP = [
+  [ 4, 16, 34, 37],
+  [ 7, 25, 40, 42],
+  [13, 22, 27, 43],
+];
+
+function snakeLED(row, col) { return SNAKE_MAP[row][col]; }
 
 let snake = [];
 let snakeFood = null;
@@ -57,7 +65,7 @@ async function snakeSendLEDs(gameOverFlash) {
   if (!connected) return;
   const colors = new Array(LED_POSITIONS.length).fill('000000');
   if (gameOverFlash) {
-    for (let i = 5; i <= 28; i++) colors[i] = 'ff1020';
+    SNAKE_MAP.flat().forEach(i => { colors[i] = 'ff1020'; });
   } else {
     if (snakeFood) colors[snakeLED(snakeFood.r, snakeFood.c)] = 'ff4400';
     snake.slice(1).forEach(s => { colors[snakeLED(s.r, s.c)] = '009944'; });
