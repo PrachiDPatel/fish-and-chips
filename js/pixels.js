@@ -1,76 +1,44 @@
 /* ===== Pixel editor =====
- * Top-down pleco view. 47 LEDs (indices 0-46).
- * Calibrated from video: strand runs SNOUT → TAIL (LED 0 = head tip, LED ~46 = tail).
- * Detected positions (blue LEDs, frame-by-frame): 4,7,10,13,16,19,22,25,27,28,31,33,34,37,40,42,43.
- * Remaining positions interpolated between detected anchors.
+ * Top-down pleco view, both pectoral fins extended (modeled on pleco-icon.png).
+ * Total: 47 LEDs.
+ * Wiring order (matches the physical strand):
+ *   0-4   tail fan
+ *   5-28  body, 6 columns × 4 rows, wired column-by-column from tail end to head end
+ *   29-33 left pectoral fin
+ *   34-38 right pectoral fin
+ *   39-46 head (back of head → snout)
  */
 const LED_POSITIONS = [
-  // 0-3: snout tip (extrapolated, buried in head stuffing)
-  {x:  30, y: 78}, {x:  36, y: 72}, {x:  42, y: 78}, {x:  50, y: 84},
-  // 4: head (calibrated)
-  {x:  60, y: 73},
-  // 5-6: interp 4→7
-  {x:  60, y: 77}, {x:  61, y: 81},
-  // 7: head lower (calibrated)
-  {x:  61, y: 85},
-  // 8-9: interp 7→10
-  {x:  65, y: 76}, {x:  70, y: 67},
-  // 10: head upper (calibrated)
-  {x:  74, y: 58},
-  // 11-12: interp 10→13
-  {x:  76, y: 75}, {x:  78, y: 92},
-  // 13: lower fin (calibrated)
-  {x:  80, y: 110},
-  // 14-15: interp 13→16
-  {x:  87, y: 93}, {x:  94, y: 76},
-  // 16: body upper-left (calibrated)
-  {x: 100, y: 59},
-  // 17-18: interp 16→19
-  {x: 114, y: 66}, {x: 127, y: 72},
-  // 19: body center (calibrated)
-  {x: 141, y: 79},
-  // 20-21: interp 19→22 (strand loops back)
-  {x: 129, y: 89}, {x: 118, y: 98},
-  // 22: body lower-left (calibrated)
-  {x: 106, y: 107},
-  // 23-24: interp 22→25
-  {x: 110, y: 101}, {x: 114, y: 95},
-  // 25: body lower-center (calibrated)
-  {x: 118, y: 89},
-  // 26: interp 25→27
-  {x: 126, y: 97},
-  // 27: body lower (calibrated)
-  {x: 134, y: 105},
-  // 28: lower fin (calibrated)
-  {x: 139, y: 111},
-  // 29-30: interp 28→31 (strand rises back up)
-  {x: 146, y: 97}, {x: 153, y: 83},
-  // 31: body upper-center (calibrated)
-  {x: 160, y: 68},
-  // 32: interp 31→33
-  {x: 169, y: 54},
-  // 33: upper fin tip (calibrated)
-  {x: 178, y: 39},
-  // 34: body upper-right (calibrated, strand returns from fin)
-  {x: 151, y: 56},
-  // 35-36: interp 34→37
-  {x: 167, y: 61}, {x: 184, y: 66},
-  // 37: tail area (calibrated)
-  {x: 200, y: 71},
-  // 38-39: interp 37→40 (strand loops back again)
-  {x: 184, y: 79}, {x: 169, y: 86},
-  // 40: body lower-right (calibrated)
-  {x: 154, y: 93},
-  // 41: interp 40→42
-  {x: 167, y: 94},
-  // 42: tail lower (calibrated)
-  {x: 179, y: 96},
-  // 43: tail (calibrated)
-  {x: 194, y: 92},
-  // 44-45: extrapolated toward tail tip
-  {x: 208, y: 88}, {x: 218, y: 84},
-  // 46: tail tip / near cable exit (barely on fish)
-  {x: 225, y: 82}
+  // 0-4: tail fan (right side)
+  {x: 228, y: 80},
+  {x: 218, y: 56}, {x: 218, y: 104},
+  {x: 206, y: 46}, {x: 206, y: 114},
+
+  // 5-28: body, 6 cols x 4 rows, tail-to-front column order
+  // col @ x=162
+  {x: 162, y: 60}, {x: 162, y: 74}, {x: 162, y: 86}, {x: 162, y: 98},
+  // col @ x=144
+  {x: 144, y: 60}, {x: 144, y: 74}, {x: 144, y: 86}, {x: 144, y: 98},
+  // col @ x=126
+  {x: 126, y: 60}, {x: 126, y: 74}, {x: 126, y: 86}, {x: 126, y: 98},
+  // col @ x=108
+  {x: 108, y: 60}, {x: 108, y: 74}, {x: 108, y: 86}, {x: 108, y: 98},
+  // col @ x=90
+  {x:  90, y: 60}, {x:  90, y: 74}, {x:  90, y: 86}, {x:  90, y: 98},
+  // col @ x=74
+  {x:  74, y: 60}, {x:  74, y: 74}, {x:  74, y: 86}, {x:  74, y: 98},
+
+  // 29-33: left pectoral fin (5 LEDs, fan up)
+  {x:  74, y: 44}, {x:  86, y: 30}, {x: 102, y: 18}, {x: 116, y: 22}, {x: 124, y: 38},
+
+  // 34-38: right pectoral fin (5 LEDs, fan down)
+  {x:  74, y: 114}, {x:  86, y: 128}, {x: 102, y: 140}, {x: 116, y: 136}, {x: 124, y: 120},
+
+  // 39-46: head (8 LEDs)
+  {x:  60, y: 60}, {x:  60, y: 98},
+  {x:  48, y: 56}, {x:  48, y: 80}, {x:  48, y: 102},
+  {x:  34, y: 60}, {x:  34, y: 100},
+  {x:  22, y: 80}
 ];
 
 const PALETTE = [
