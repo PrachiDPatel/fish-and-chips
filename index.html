@@ -271,9 +271,40 @@
   </div>
 </div>
 
+<!-- ⚙ Settings button -->
+<button class="settings-btn" id="settings-btn" aria-label="calibrate">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
+
+<!-- Settings drawer -->
+<div class="settings-overlay" id="settings-overlay"></div>
+<div class="settings-drawer" id="settings-drawer">
+  <div class="settings-handle"></div>
+  <div class="settings-drawer-title">calibrate leds</div>
+  <div class="pixel-sub" style="text-align:center;margin-bottom:1rem">watch · write down numbers · send photo</div>
+  <div class="calib-body">
+    <div class="calib-counter" id="calib-num">—</div>
+    <div class="calib-label">led index</div>
+    <div class="calib-color-name" id="calib-color-name">—</div>
+    <div class="calib-progress" style="width:100%">
+      <div class="calib-progress-fill" id="calib-fill" style="width:0%"></div>
+    </div>
+    <div class="calib-progress-text" id="calib-progress-text">0 / 50</div>
+    <button class="calib-start-btn" id="calib-start">start</button>
+    <div class="calib-note">
+      each led lights up for 2 seconds — note which spot on joseph glows and its number.<br>
+      colors cycle red → blue → green so neighbours look different.
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/pixels.js"></script>
 <script src="js/snake.js"></script>
+<script src="js/calib.js"></script>
 </body>
 </html>

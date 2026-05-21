@@ -173,4 +173,4 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft')  snakeSetDir(0, -1);
   if (e.key === 'ArrowRight') snakeSetDir(0,  1);
 });
-</script>
+
