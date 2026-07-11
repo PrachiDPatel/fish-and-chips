@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🐟 Fish and Chips 🐟
+#  Fish and Chips 
 
 Mobile web remote for joseph — a pleco catfish-shaped LED light in my room, running WLED on an ESP32 over WiFi.
 
-**[→ Try it live](https://prachidpatel.github.io/fish-and-chips/)**
+** Live at : (https://prachidpatel.github.io/fish-and-chips/)**
 
 ---
 
@@ -12,15 +12,15 @@ Mobile web remote for joseph — a pleco catfish-shaped LED light in my room, ru
 
 </div>
 
-1. Connect to the same WiFi as joseph
-2. Pick a preset or paint a pattern
-3. MQTT message fires → WLED picks it up → joseph changes color
+1. Connect to the same local WiFi as joseph
+2. Connect him to your local network (optional) 
+3. Pick a preset or paint a pattern
+4. MQTT message fires -> WLED picks it up -> joseph changes color
 
-Built mobile-first, meant to be used from your phone while lying in bed.
-
+Can be used from any device, especially designed with mobile in mind.
 <div align="center">
 
-## 🎮 Features 🎮
+##  Features 
 
 </div>
 
@@ -30,11 +30,11 @@ Built mobile-first, meant to be used from your phone while lying in bed.
 
 <div align="center">
 
-## 🔧 Setup 🔧
+##  Setup 
 
 </div>
 
-This repo is a template — the real broker URL and WLED topic are not committed.
+This repo is a template — the real broker URL and WLED topic are not committed. Contact me if you want more information. 
 
 1. Open `index.html` locally
 2. Fill in the `CONFIG` block at the top of the script:
@@ -48,7 +48,7 @@ Keep your filled-in copy local and never push it.
 
 <div align="center">
 
-## 💻 Stack 💻
+##  Stack 
 
 </div>
 
@@ -58,7 +58,7 @@ Keep your filled-in copy local and never push it.
 
 <div align="center">
 
-## 🛠️ How Joseph Was Built 🛠️
+##  How Joseph Was Built 
 
 ![Joseph, from cardboard to fish](images/joseph-build.webp)
 
