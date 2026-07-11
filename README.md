@@ -55,3 +55,13 @@ Keep your filled-in copy local and never push it.
 - ESP32 + WLED
 - MQTT over WiFi
 - HTML / CSS / JavaScript
+
+<div align="center">
+
+## 🛠️ How Joseph Was Built 🛠️
+
+![Joseph, from cardboard to fish](images/joseph-build.webp)
+
+Cardboard to fish — every LED is individually mapped to the site, so I can repaint or animate him whenever I want.
+
+</div>
