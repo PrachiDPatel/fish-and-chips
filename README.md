@@ -27,7 +27,7 @@ Can be used from any device, especially designed with mobile in mind.
 - **Mood presets** — happy,sad, angry, and a few others
 - **Time presets** - morning and evening
 - **Pixel painter** — draw a custom pattern directly onto the LED grid and push it live
-- **Snake** — yes there is a snake game on the fish [** in progress]
+- **Snake** — yes there is a snake game on the fish
 
 <div align="center">
 
