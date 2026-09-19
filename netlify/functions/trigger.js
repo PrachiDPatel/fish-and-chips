@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
 
-const TOPIC  = 'wled/b6fba0/api';
+const TOPIC  = 'wled/demo/api';
 const BROKER = 'mqtt://broker.emqx.io';
 
 exports.handler = async (event) => {

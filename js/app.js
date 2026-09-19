@@ -1,6 +1,8 @@
 const BROKER = 'wss://broker.emqx.io:8084/mqtt';
-const TOPIC = 'wled/b6fba0/api';
-const HOTCOLD_TOPIC = 'wled/b6fba0/hotcold';
+// Portfolio/demo build: the live device topic stays in the private controller.
+// This public build intentionally targets a demo topic so it can never control the real Pleco.
+const TOPIC = 'wled/demo/api';
+const HOTCOLD_TOPIC = 'wled/demo/hotcold';
 let client = null;
 let connected = false;
 let lightOn = false;
