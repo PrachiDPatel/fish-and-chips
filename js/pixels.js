@@ -8,57 +8,63 @@
  *   34-38 right pectoral fin
  *   39-46 head (back of head → snout)
  */
+/* ===== Pixel editor =====
+ * Top-down pleco view, both pectoral fins extended (modeled on pleco-icon.png).
+ * Total: 50 LEDs (indices 0-49); LEDs 0 and 1 are dead (see DEAD_LEDS).
+ * Positions are the calibrated map — don't hand-edit, use dot-editor.html.
+ */
+const DEAD_LEDS = new Set([0, 1]);
 const LED_POSITIONS = [
-  // raw pixel coords from pleco mapping - dots.png (1920×1920)
-  // spatial order; wiring order TBD via calibration
-  {x:  634.64, y:  515.52}, // 0
-  {x:  804.64, y:  497.52}, // 1
-  {x:  427.60, y:  670.56}, // 2
-  {x:  517.60, y:  601.56}, // 3
-  {x:  605.60, y:  640.56}, // 4
-  {x:  280.64, y:  736.56}, // 5
-  {x:  317.60, y:  707.52}, // 6
-  {x:  371.60, y:  721.56}, // 7
-  {x:  558.64, y:  682.56}, // 8
-  {x:  707.60, y:  758.52}, // 9
-  {x:  866.64, y:  699.48}, // 10
-  {x: 1003.60, y:  738.48}, // 11
-  {x:  142.64, y:  834.48}, // 12
-  {x:  204.64, y:  767.52}, // 13
-  {x:  241.60, y:  823.56}, // 14
-  {x:  399.60, y:  831.48}, // 15
-  {x:  542.64, y:  789.48}, // 16
-  {x:  850.64, y:  783.48}, // 17
-  {x: 1134.64, y:  839.52}, // 18
-  {x:  159.60, y:  885.48}, // 19
-  {x:  501.60, y:  870.48}, // 20
-  {x:  666.64, y:  852.48}, // 21
-  {x:  901.60, y:  882.48}, // 22
-  {x: 1244.64, y:  886.56}, // 23
-  {x:  157.60, y:  945.48}, // 24
-  {x:  273.60, y:  942.48}, // 25
-  {x:  206.64, y:  941.52}, // 26
-  {x:  350.64, y:  944.52}, // 27
-  {x:  483.60, y:  952.56}, // 28
-  {x:  613.60, y:  967.56}, // 29
-  {x: 1026.64, y:  992.52}, // 30
-  {x: 1349.60, y:  932.52}, // 31
-  {x:  219.12, y: 1011.48}, // 32
-  {x:  307.60, y: 1055.52}, // 33
-  {x:  361.60, y: 1029.48}, // 34
-  {x:  790.64, y: 1029.48}, // 35
-  {x: 1554.64, y: 1072.56}, // 36
-  {x: 1590.64, y: 1045.56}, // 37
-  {x:  373.60, y: 1084.56}, // 38
-  {x:  442.64, y: 1089.48}, // 39
-  {x:  613.60, y: 1092.48}, // 40
-  {x:  820.64, y: 1104.48}, // 41
-  {x:  975.60, y: 1115.52}, // 42
-  {x:  495.60, y: 1162.56}, // 43
-  {x:  561.60, y: 1164.48}, // 44
-  {x: 1610.64, y: 1170.48}, // 45
-  {x:  601.60, y: 1270.56}, // 46
-  {x:  715.60, y: 1285.56}, // 47
+  {x:  242.57, y: 1460.63}, //  0 ← inactive
+  {x:  169.06, y: 1451.89}, //  1 ← inactive
+  {x:  492.68, y:  819.45}, //  2
+  {x:  369.85, y:  888.87}, //  3
+  {x:  255.02, y:  782.06}, //  4
+  {x:  126.84, y:  808.76}, //  5
+  {x:  150.87, y:  926.25}, //  6
+  {x:  214.96, y:  993.01}, //  7
+  {x:  180.24, y:  838.14}, //  8
+  {x:  385.87, y:  680.59}, //  9
+  {x:  263.03, y:  717.97}, // 10
+  {x:  292.41, y:  891.54}, // 11
+  {x:  166.90, y:  760.69}, // 12
+  {x:  273.71, y: 1030.40}, // 13
+  {x:  222.98, y:  910.24}, // 14
+  {x:  319.11, y:  683.26}, // 15
+  {x:  449.96, y:  645.88}, // 16
+  {x:  530.07, y:  664.57}, // 17
+  {x:  540.76, y:  752.68}, // 18
+  {x:  634.20, y:  827.45}, // 19
+  {x:  393.88, y:  784.73}, // 20
+  {x:  353.82, y: 1025.06}, // 21
+  {x:  433.94, y: 1041.07}, // 22
+  {x:  457.98, y: 1142.56}, // 23
+  {x:  364.51, y:  966.31}, // 24
+  {x:  482.01, y:  912.91}, // 25
+  {x:  578.15, y:  934.27}, // 26
+  {x:  538.08, y: 1142.56}, // 27
+  {x:  570.13, y: 1254.71}, // 28
+  {x:  773.07, y: 1329.48}, // 29
+  {x:  596.83, y: 1057.11}, // 30
+  {x:  687.62, y:  739.34}, // 31
+  {x:  586.14, y:  621.84}, // 32
+  {x:  802.45, y:  480.30}, // 33
+  {x:  607.51, y:  509.68}, // 34
+  {x:  495.35, y:  600.47}, // 35
+  {x:  850.51, y:  699.28}, // 36
+  {x: 1005.39, y:  750.02}, // 37
+  {x:  837.16, y:  766.03}, // 38
+  {x:  903.92, y:  854.16}, // 39
+  {x:  786.42, y: 1001.03}, // 40
+  {x:  807.79, y: 1091.82}, // 41
+  {x:  989.38, y: 1142.56}, // 42
+  {x: 1061.47, y:  982.33}, // 43
+  {x: 1264.41, y:  840.80}, // 44
+  {x: 1387.26, y:  926.26}, // 45
+  {x: 1582.20, y: 1070.46}, // 46
+  {x: 1707.69, y: 1179.94}, // 47
+  {x: 1633.71, y: 1163.27}, // 48
+  {x: 1666.40, y: 1246.04}, // 49
 ];
 
 const PALETTE = [
@@ -107,6 +113,7 @@ function renderLEDs() {
   const g = document.getElementById('leds');
   g.innerHTML = '';
   LED_POSITIONS.forEach((p, idx) => {
+    if (DEAD_LEDS.has(idx)) return;
     const ledGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     ledGroup.setAttribute('class', 'led-group');
     ledGroup.setAttribute('data-index', idx);
@@ -126,15 +133,6 @@ function renderLEDs() {
     ledGroup.appendChild(hit);
     ledGroup.appendChild(led);
     g.appendChild(ledGroup);
-
-    addTapListener(ledGroup, () => {
-      if (pixelState[idx] === currentColor) {
-        pixelState[idx] = null;
-      } else {
-        pixelState[idx] = currentColor;
-      }
-      paintLED(idx);
-    });
   });
 }
 
@@ -151,6 +149,159 @@ function paintLED(idx) {
   }
 }
 function paintAllLEDs() { for (let i = 0; i < pixelState.length; i++) paintLED(i); }
+function setPixel(idx, color) { pixelState[idx] = color; paintLED(idx); }
+
+/* ── Brush painting — tap a dot to toggle it, press-drag to paint a stroke ── */
+let eraserMode = false;
+let brushDown = false, brushMoved = false;
+const BRUSH_RADIUS = 45;
+const pixelSvg = document.getElementById('pixel-canvas');
+const brushCursorEl = document.getElementById('brush-cursor');
+brushCursorEl.setAttribute('r', BRUSH_RADIUS);
+
+function pixelSvgCoords(cx, cy) {
+  const pt = pixelSvg.createSVGPoint(); pt.x = cx; pt.y = cy;
+  return pt.matrixTransform(pixelSvg.getScreenCTM().inverse());
+}
+function nearestLED(cx, cy, radius) {
+  const sp = pixelSvgCoords(cx, cy);
+  let best = -1, bestD = radius * radius;
+  LED_POSITIONS.forEach((p, idx) => {
+    if (DEAD_LEDS.has(idx)) return;
+    const dx = p.x - sp.x, dy = p.y - sp.y;
+    const d = dx * dx + dy * dy;
+    if (d <= bestD) { bestD = d; best = idx; }
+  });
+  return best;
+}
+function brushPaintAt(cx, cy) {
+  const sp = pixelSvgCoords(cx, cy);
+  LED_POSITIONS.forEach((p, idx) => {
+    if (DEAD_LEDS.has(idx)) return;
+    const dx = p.x - sp.x, dy = p.y - sp.y;
+    if (dx * dx + dy * dy <= BRUSH_RADIUS * BRUSH_RADIUS) setPixel(idx, eraserMode ? null : currentColor);
+  });
+}
+function moveBrushCursor(cx, cy) {
+  const sp = pixelSvgCoords(cx, cy);
+  brushCursorEl.setAttribute('cx', sp.x);
+  brushCursorEl.setAttribute('cy', sp.y);
+  brushCursorEl.style.display = 'block';
+  brushCursorEl.style.stroke = eraserMode ? '#f87171' : ('#' + currentColor);
+}
+
+pixelSvg.addEventListener('mousedown', e => {
+  brushDown = true; brushMoved = false;
+  moveBrushCursor(e.clientX, e.clientY);
+});
+document.addEventListener('mousemove', e => {
+  if (!brushDown) return;
+  brushMoved = true;
+  moveBrushCursor(e.clientX, e.clientY);
+  brushPaintAt(e.clientX, e.clientY);
+});
+document.addEventListener('mouseup', e => {
+  if (!brushDown) return;
+  if (!brushMoved) {
+    const idx = nearestLED(e.clientX, e.clientY, 44);
+    if (idx >= 0) setPixel(idx, (!eraserMode && pixelState[idx] === currentColor) ? null : (eraserMode ? null : currentColor));
+  }
+  brushDown = false;
+  brushCursorEl.style.display = 'none';
+});
+
+pixelSvg.addEventListener('touchstart', e => {
+  e.preventDefault();
+  brushDown = true; brushMoved = false;
+  const t = e.touches[0]; moveBrushCursor(t.clientX, t.clientY);
+}, { passive: false });
+document.addEventListener('touchmove', e => {
+  if (!brushDown) return; e.preventDefault();
+  brushMoved = true;
+  const t = e.touches[0]; moveBrushCursor(t.clientX, t.clientY); brushPaintAt(t.clientX, t.clientY);
+}, { passive: false });
+document.addEventListener('touchend', e => {
+  if (!brushDown) return;
+  if (!brushMoved) {
+    const t = e.changedTouches[0];
+    const idx = nearestLED(t.clientX, t.clientY, 44);
+    if (idx >= 0) setPixel(idx, (!eraserMode && pixelState[idx] === currentColor) ? null : (eraserMode ? null : currentColor));
+  }
+  brushDown = false;
+  brushCursorEl.style.display = 'none';
+});
+
+addTapListener(document.getElementById('btn-eraser'), () => {
+  eraserMode = !eraserMode;
+  document.getElementById('btn-eraser').classList.toggle('active', eraserMode);
+});
+
+/* ── Word drawing — renders text across the LED layout (best-effort, not a grid) ── */
+function spellWord(text) {
+  const chars = text.toUpperCase().split('').filter(ch => /[A-Z0-9!?.]/.test(ch) || ch === ' ');
+  if (!chars.length) return;
+
+  const activeIdx = LED_POSITIONS.map((_, i) => i).filter(i => !DEAD_LEDS.has(i));
+  const xs = activeIdx.map(i => LED_POSITIONS[i].x);
+  const ys = activeIdx.map(i => LED_POSITIONS[i].y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const cellW = (maxX - minX) / chars.length;
+
+  const CW = 120, CH = 160;
+  const canvas = document.createElement('canvas');
+  canvas.width = CW; canvas.height = CH;
+  const ctx = canvas.getContext('2d');
+
+  for (let i = 0; i < pixelState.length; i++) pixelState[i] = null;
+
+  chars.forEach((ch, ci) => {
+    if (ch === ' ') return;
+    ctx.clearRect(0, 0, CW, CH);
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 150px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(ch, CW / 2, CH / 2 + 8);
+    const img = ctx.getImageData(0, 0, CW, CH).data;
+
+    const cellMinX = minX + ci * cellW;
+    activeIdx.forEach(idx => {
+      const p = LED_POSITIONS[idx];
+      if (p.x < cellMinX || p.x >= cellMinX + cellW) return;
+      const fx = Math.round((p.x - cellMinX) / cellW * CW);
+      const fy = Math.round((p.y - minY) / (maxY - minY) * CH);
+      if (fx < 0 || fx >= CW || fy < 0 || fy >= CH) return;
+      const alpha = img[(fy * CW + fx) * 4 + 3];
+      if (alpha > 100) pixelState[idx] = currentColor;
+    });
+  });
+
+  paintAllLEDs();
+}
+addTapListener(document.getElementById('btn-spell'), () => {
+  spellWord(document.getElementById('spell-input').value || '');
+});
+
+/* ── Dot map download — numbered SVG of every LED, for mapping/debugging ── */
+document.getElementById('btn-dot-map').addEventListener('click', () => {
+  const W = 1920, H = 1080, R = 18;
+  const dots = LED_POSITIONS.map((p, i) => {
+    const dead = DEAD_LEDS.has(i);
+    const fill = dead ? '#444' : '#22d3ee';
+    const stroke = dead ? '#666' : '#cffafe';
+    return `<circle cx="${p.x}" cy="${p.y}" r="${R}" fill="${fill}" fill-opacity="0.55" stroke="${stroke}" stroke-width="2"/>` +
+      `\n    <text x="${p.x}" y="${p.y}" text-anchor="middle" dominant-baseline="central" font-family="monospace" font-size="16" fill="${dead ? '#888' : '#fff'}">${i}</text>`;
+  }).join('\n');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+  <rect width="${W}" height="${H}" fill="#020617"/>
+  ${dots}
+</svg>`;
+  const a = document.createElement('a');
+  a.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  a.download = 'joseph-dot-map.svg';
+  a.click();
+});
 
 async function sendPixels() {
   if (!(await ensureConnected())) return;

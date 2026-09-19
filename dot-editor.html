@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LED fine-tune · joseph</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg-0:#020617; --bg-1:#031530; --bg-2:#06243d; --cyan-soft:#67e8f9; --cyan-bright:#22d3ee; --text:#e0f2fe; --muted:#64748b; }
+  html,body { background:var(--bg-0); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overscroll-behavior:none; }
+  body { display:flex; flex-direction:column; align-items:center; padding:1.5rem 1rem 4rem;
+    background: radial-gradient(ellipse at 50% -10%,rgba(34,211,238,.18),transparent 55%),
+                linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 45%,var(--bg-2) 100%);
+    background-attachment:fixed; }
+
+  h1 { font-family:'DM Serif Display',serif; font-size:1.6rem; color:#cffafe; text-shadow:0 0 24px rgba(34,211,238,.4); margin-bottom:.15rem; text-align:center; }
+  .sub { font-size:.68rem; color:var(--cyan-soft); opacity:.65; letter-spacing:.1em; text-transform:uppercase; margin-bottom:1rem; text-align:center; max-width:560px; line-height:1.7; }
+
+  /* Connection bar */
+  .conn-bar { width:100%; max-width:720px; display:flex; align-items:center; gap:10px; margin-bottom:.85rem;
+    background:rgba(8,47,73,.35); border:.5px solid rgba(34,211,238,.2); border-radius:12px; padding:8px 12px; }
+  .conn-dot { width:8px; height:8px; border-radius:50%; background:#334155; flex-shrink:0; transition:background .3s,box-shadow .3s; }
+  .conn-dot.connecting { background:#60a5fa; box-shadow:0 0 8px #60a5fa; animation:pulse 1s infinite; }
+  .conn-dot.connected  { background:#34d399; box-shadow:0 0 10px rgba(52,211,153,.8); }
+  .conn-dot.error      { background:#f87171; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .conn-text { font-size:.78rem; color:#7dd3fc; flex:1; }
+  .conn-btn { padding:6px 14px; border-radius:8px; background:rgba(8,145,178,.2); border:.5px solid rgba(34,211,238,.4); color:#cffafe; font-family:inherit; font-size:.75rem; cursor:pointer; }
+
+  /* Canvas */
+  .canvas-wrap { width:100%; max-width:720px; background:#000;
+    border:.5px solid rgba(34,211,238,.18); border-radius:16px;
+    overflow:hidden; margin-bottom:.75rem; position:relative; touch-action:none; user-select:none; }
+  #editor-canvas { display:block; width:100%; height:auto; overflow:visible; }
+  #outline-img { pointer-events:none; }
+
+  .zone-rect  { fill:rgba(100,116,139,.08); stroke:rgba(148,163,184,.5); stroke-width:2; stroke-dasharray:10 8; pointer-events:none; }
+  .zone-label { font-size:22px; font-family:'DM Sans',sans-serif; fill:#64748b; text-anchor:middle; pointer-events:none; letter-spacing:2px; }
+
+  .select-rect { fill:rgba(250,204,21,.12); stroke:#facc15; stroke-width:2; stroke-dasharray:6 5; pointer-events:none; }
+
+  /* Palette */
+  .palette-section { width:100%; max-width:720px; margin-bottom:.75rem; }
+  .palette-header { font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; color:var(--cyan-soft); opacity:.7; margin-bottom:.5rem; }
+  .palette { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .swatch { width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,.15); cursor:pointer; padding:0; position:relative; }
+  .swatch.active { border-color:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.25), 0 0 10px rgba(255,255,255,.5); }
+  .custom-swatch { display:flex; align-items:center; justify-content:center; background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red); }
+  .custom-swatch input[type=color] { width:100%; height:100%; border:none; border-radius:50%; padding:0; background:none; cursor:pointer; opacity:0; position:absolute; inset:0; }
+  .paint-tools { display:flex; gap:8px; margin-top:.6rem; flex-wrap:wrap; }
+  .paint-btn { padding:7px 16px; border-radius:9px; background:rgba(34,211,238,.12); border:.5px solid rgba(34,211,238,.4); color:#a5f3fc; font-family:inherit; font-size:.8rem; cursor:pointer; }
+  .paint-btn:active { filter:brightness(1.3); }
+  .paint-btn.btn-send-colors { border-color:rgba(74,222,128,.45); color:#bbf7d0; }
+  .paint-btn.btn-rainbow { border-color:rgba(216,180,254,.5); color:#e9d5ff; }
+  .paint-btn.btn-clear-colors { border-color:rgba(248,113,113,.35); color:#fca5a5; }
+  .paint-btn.btn-brush.active { background:rgba(34,211,238,.35); border-color:#22d3ee; color:#fff; }
+  .paint-btn.btn-eraser.active { background:rgba(248,113,113,.35); border-color:#f87171; color:#fff; }
+  #brush-cursor { fill:none; stroke:rgba(255,255,255,.85); stroke-width:2; stroke-dasharray:4 4; pointer-events:none; display:none; }
+
+  /* Undo/Redo bar */
+  .history-bar { width:100%; max-width:720px; display:flex; align-items:center; gap:8px; margin-bottom:.75rem; }
+  .hist-btn { padding:7px 16px; border-radius:9px; background:rgba(8,47,73,.45); border:.5px solid rgba(34,211,238,.25); color:#7dd3fc; font-family:inherit; font-size:.8rem; cursor:pointer; display:flex; align-items:center; gap:6px; transition:opacity .15s, filter .15s; }
+  .hist-btn:disabled { opacity:.5; cursor:default; filter:grayscale(.6); }
+  .hist-btn:not(:disabled):active { filter:brightness(1.4); }
+  .hist-label { font-size:.68rem; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; flex:1; text-align:right; }
+
+  /* Region bar */
+  .region-bar { width:100%; max-width:720px; display:flex; align-items:center; gap:8px; margin-bottom:.75rem; flex-wrap:wrap; }
+  .region-btn { padding:7px 16px; border-radius:9px; background:rgba(250,204,21,.12); border:.5px solid rgba(250,204,21,.4); color:#fde68a; font-family:inherit; font-size:.8rem; cursor:pointer; }
+  .region-btn:active { filter:brightness(1.3); }
+  .region-btn:disabled { opacity:.4; cursor:default; }
+  .region-label { font-size:.68rem; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; flex:1; text-align:right; }
+
+  /* Placed dots on SVG */
+  .placed-hit    { fill:transparent; cursor:grab; }
+  .placed-circle { fill:rgba(34,211,238,.28); stroke:rgba(103,232,249,.85); stroke-width:2; transition:fill .12s, stroke .12s; }
+  .placed-group:hover .placed-circle { fill:rgba(34,211,238,.55); stroke:#cffafe; }
+  .placed-group.dragging { cursor:grabbing; }
+  .placed-group.dragging .placed-circle {
+    fill:#fff; stroke:#fff; stroke-width:2;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,.95)) drop-shadow(0 0 22px rgba(255,255,255,.6));
+  }
+  .placed-label { font-size:19px; font-family:'SF Mono',Menlo,monospace; font-weight:700; fill:#cffafe; text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+  .placed-group.dragging .placed-label { fill:#0891b2; }
+
+  .placed-group { transition: opacity .15s ease; }
+  .placed-group.peer-dim { opacity:.25; }
+
+  .placed-group.inactive .placed-circle { fill:rgba(100,116,139,.25); stroke:rgba(100,116,139,.7); }
+  .placed-group.inactive .placed-label  { fill:#64748b; }
+
+  .placed-group.painted .placed-circle { fill:currentColor; stroke:currentColor; stroke-width:2.5; }
+  .placed-group.painted .placed-label  { fill:#020617; }
+
+  .placed-group.selected .placed-circle { stroke:#facc15; stroke-width:4; }
+  .placed-group.selected .placed-label  { fill:#fef08a; }
+
+  .placed-group.dragging .placed-circle { fill:#fff!important; stroke:#fff!important; }
+  .placed-group.dragging .placed-label  { fill:#0891b2!important; }
+
+  /* Toolbar */
+  .toolbar { width:100%; max-width:720px; display:flex; gap:10px; margin-bottom:1rem; flex-wrap:wrap; }
+  .toolbar button { flex:1; min-width:130px; padding:12px 16px; border-radius:12px;
+    font-family:inherit; font-size:.82rem; letter-spacing:.1em; text-transform:uppercase;
+    cursor:pointer; border:.5px solid rgba(34,211,238,.35);
+    background:linear-gradient(160deg,rgba(8,47,73,.55),rgba(2,6,23,.55)); color:#cffafe;
+    transition:transform .12s, filter .12s; }
+  .toolbar button:active { transform:scale(.96); filter:brightness(1.4); }
+  .btn-export { border-color:rgba(74,222,128,.45)!important; color:#bbf7d0!important; box-shadow:0 0 14px -4px rgba(74,222,128,.4); }
+  .btn-reset  { border-color:rgba(248,113,113,.35)!important; color:#fca5a5!important; }
+
+  /* Output */
+  .output-wrap { width:100%; max-width:720px; display:none; flex-direction:column; gap:8px; }
+  .output-wrap.visible { display:flex; }
+  .output-label { font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; color:var(--cyan-soft); opacity:.7; }
+  #output-textarea { width:100%; height:220px; background:rgba(2,6,23,.7); border:.5px solid rgba(34,211,238,.2); border-radius:12px; padding:.85rem 1rem; color:#6ee7b7; font-family:'SF Mono',Menlo,monospace; font-size:11px; line-height:1.6; resize:vertical; outline:none; }
+  .copy-row { display:flex; align-items:center; gap:12px; justify-content:flex-end; }
+  .copy-btn { padding:9px 20px; border-radius:10px; background:rgba(8,145,178,.22); border:.5px solid rgba(34,211,238,.45); color:#cffafe; font-family:inherit; font-size:.8rem; cursor:pointer; }
+  .copy-confirm { font-size:.73rem; color:#6ee7b7; opacity:0; transition:opacity .3s; }
+  .copy-confirm.show { opacity:1; }
+</style>
+</head>
+<body>
+
+<h1>LED fine-tune</h1>
+<div class="sub">
+  <span id="mode-move-hint">drag a dot to move it — it glows white, everyone else dims to 25% so you can still see relationships<br>
+  click a dot (no drag) to paint it with the current color, click again to clear it<br>
+  drag empty canvas to box-select a region · drag a dot into the dashed shelf to mark it inactive</span>
+  <span id="mode-brush-hint" style="display:none">brush mode — press and drag across the fish to paint every dot you pass over with the current color<br>
+  hold the eraser swatch instead to wipe a stroke clean · turn brush mode off to move dots again</span>
+</div>
+
+<div class="conn-bar">
+  <div class="conn-dot" id="conn-dot"></div>
+  <span class="conn-text" id="conn-text">connect to light LEDs while you drag / paint</span>
+  <button class="conn-btn" id="conn-btn">connect</button>
+</div>
+
+<div class="palette-section">
+  <div class="palette-header">paint color</div>
+  <div class="palette" id="palette"><!-- swatches injected by JS --></div>
+  <div class="paint-tools">
+    <button class="paint-btn btn-brush" id="btn-brush">brush mode: off</button>
+    <button class="paint-btn btn-eraser" id="btn-eraser">eraser</button>
+    <button class="paint-btn btn-send-colors" id="btn-send-colors">send colors →</button>
+    <button class="paint-btn btn-rainbow" id="btn-rainbow">rainbow map</button>
+    <button class="paint-btn btn-clear-colors" id="btn-clear-colors">clear colors</button>
+  </div>
+</div>
+
+<div class="canvas-wrap" id="canvas-wrap">
+  <svg id="editor-canvas" viewBox="0 300 1920 1200" xmlns="http://www.w3.org/2000/svg">
+    <image id="outline-img" href="pleco-outline.png" x="0" y="0" width="1920" height="1920" preserveAspectRatio="xMidYMid meet" style="opacity:.9; filter:drop-shadow(0 0 6px rgba(34,211,238,.55));"/>
+    <rect class="zone-rect" id="zone-rect" x="20" y="1420" width="1880" height="75" rx="10"/>
+    <text class="zone-label" id="zone-label" x="960" y="1457">inactive</text>
+    <g id="placed-dots"></g>
+    <rect class="select-rect" id="select-rect" style="display:none"/>
+    <circle id="brush-cursor" cx="0" cy="0" r="45"/>
+  </svg>
+</div>
+
+<div class="history-bar">
+  <button class="hist-btn" id="btn-undo" disabled>← undo</button>
+  <button class="hist-btn" id="btn-redo" disabled>redo →</button>
+  <span class="hist-label" id="hist-label">no history yet</span>
+</div>
+
+<div class="region-bar">
+  <button class="region-btn" id="btn-light-selected" disabled>light selected (white)</button>
+  <button class="region-btn" id="btn-paint-selected" disabled>paint selected</button>
+  <button class="region-btn" id="btn-clear-selection" disabled>clear selection</button>
+  <button class="region-btn" id="btn-lights-off">lights off</button>
+  <span class="region-label" id="selection-count">0 selected</span>
+</div>
+
+<div class="toolbar">
+  <button class="btn-export" id="btn-export">export array</button>
+  <button class="btn-reset"  id="btn-reset">reset to last export</button>
+</div>
+
+<div class="output-wrap" id="output-wrap">
+  <div class="output-label">paste this into index.html — replace the existing LED_POSITIONS block</div>
+  <textarea id="output-textarea" spellcheck="false" readonly></textarea>
+  <div class="copy-row">
+    <span class="copy-confirm" id="copy-confirm">copied!</span>
+    <button class="copy-btn" id="copy-btn">copy to clipboard</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+<script>
+/* ── Seed positions — current LED_POSITIONS from index.html, plus 2 spare
+   candidate slots (48, 49) parked in the inactive shelf ─────────────────── */
+const LED_COUNT = 50;
+const ZONE = { x0: 20, y0: 1420, x1: 1900, y1: 1495 };
+function isInactive(pos) { return pos.x >= ZONE.x0 && pos.x <= ZONE.x1 && pos.y >= ZONE.y0 && pos.y <= ZONE.y1; }
+
+const SEED_POSITIONS = [
+  {x:  242.57, y: 1460.63}, //  0
+  {x:  169.06, y: 1451.89}, //  1
+  {x:  492.68, y:  819.45}, //  2
+  {x:  369.85, y:  888.87}, //  3
+  {x:  255.02, y:  782.06}, //  4
+  {x:  126.84, y:  808.76}, //  5
+  {x:  150.87, y:  926.25}, //  6
+  {x:  214.96, y:  993.01}, //  7
+  {x:  180.24, y:  838.14}, //  8
+  {x:  385.87, y:  680.59}, //  9
+  {x:  263.03, y:  717.97}, // 10
+  {x:  292.41, y:  891.54}, // 11
+  {x:  166.90, y:  760.69}, // 12
+  {x:  273.71, y: 1030.40}, // 13
+  {x:  222.98, y:  910.24}, // 14
+  {x:  319.11, y:  683.26}, // 15
+  {x:  449.96, y:  645.88}, // 16
+  {x:  530.07, y:  664.57}, // 17
+  {x:  540.76, y:  752.68}, // 18
+  {x:  634.20, y:  827.45}, // 19
+  {x:  393.88, y:  784.73}, // 20
+  {x:  353.82, y: 1025.06}, // 21
+  {x:  433.94, y: 1041.07}, // 22
+  {x:  457.98, y: 1142.56}, // 23
+  {x:  364.51, y:  966.31}, // 24
+  {x:  482.01, y:  912.91}, // 25
+  {x:  578.15, y:  934.27}, // 26
+  {x:  538.08, y: 1142.56}, // 27
+  {x:  570.13, y: 1254.71}, // 28
+  {x:  773.07, y: 1329.48}, // 29
+  {x:  596.83, y: 1057.11}, // 30
+  {x:  687.62, y:  739.34}, // 31
+  {x:  586.14, y:  621.84}, // 32
+  {x:  802.45, y:  480.30}, // 33
+  {x:  607.51, y:  509.68}, // 34
+  {x:  495.35, y:  600.47}, // 35
+  {x:  850.51, y:  699.28}, // 36
+  {x: 1005.39, y:  750.02}, // 37
+  {x:  837.16, y:  766.03}, // 38
+  {x:  903.92, y:  854.16}, // 39
+  {x:  786.42, y: 1001.03}, // 40
+  {x:  807.79, y: 1091.82}, // 41
+  {x:  989.38, y: 1142.56}, // 42
+  {x: 1061.47, y:  982.33}, // 43
+  {x: 1264.41, y:  840.80}, // 44
+  {x: 1387.26, y:  926.26}, // 45
+  {x: 1582.20, y: 1070.46}, // 46
+  {x: 1707.69, y: 1179.94}, // 47
+  {x: 1633.71, y: 1163.27}, // 48
+  {x: 1666.40, y: 1246.04}, // 49
+];
+
+/* ── MQTT ─────────────────────────────────────────────────────────────── */
+const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+const TOPIC  = 'wled/b6fba0/api';
+
+let mqttClient = null, mqttConnected = false;
+
+function setConnUI(state, text) {
+  document.getElementById('conn-dot').className = 'conn-dot ' + state;
+  document.getElementById('conn-text').textContent = text;
+  const btn = document.getElementById('conn-btn');
+  btn.textContent = state === 'connecting' ? 'connecting…' : (mqttConnected ? 'disconnect' : 'connect');
+  btn.disabled = state === 'connecting';
+}
+function mqttConnect() {
+  return new Promise(resolve => {
+    if (mqttConnected) { resolve(); return; }
+    setConnUI('connecting', 'connecting…');
+    const id = 'finetune_' + Math.random().toString(16).substr(2,8);
+    mqttClient = mqtt.connect(BROKER, {clientId:id, clean:true, connectTimeout:10000, reconnectPeriod:0});
+    mqttClient.on('connect', () => { mqttConnected=true; setConnUI('connected','connected'); resolve(); });
+    mqttClient.on('error',   () => { mqttConnected=false; setConnUI('error','connection failed'); resolve(); });
+    mqttClient.on('close',   () => { if(mqttConnected){mqttConnected=false; setConnUI('','disconnected');} });
+  });
+}
+function mqttDisconnect() { if(mqttClient){mqttClient.end(true);mqttClient=null;} mqttConnected=false; setConnUI('','not connected'); }
+function mqttPublish(p) { if(mqttConnected&&mqttClient) mqttClient.publish(TOPIC,p,{qos:0}); }
+function lightOnlyLED(idx) {
+  const arr=[];
+  for(let i=0;i<LED_COUNT;i++) arr.push(i, i===idx?'ffffff':'000000');
+  mqttPublish(JSON.stringify({on:true,bri:255,seg:{i:arr}}));
+}
+function lightSet(indices) {
+  const set = new Set(indices);
+  const arr=[];
+  for(let i=0;i<LED_COUNT;i++) arr.push(i, set.has(i)?'ffffff':'000000');
+  mqttPublish(JSON.stringify({on:true,bri:255,seg:{i:arr}}));
+}
+function lightsOff() { mqttPublish(JSON.stringify({on:false})); }
+function sendColorMap(colorMap) {
+  const arr=[];
+  for(let i=0;i<LED_COUNT;i++) arr.push(i, colorMap[i] || '000000');
+  mqttPublish(JSON.stringify({on:true,bri:255,seg:{i:arr}}));
+}
+
+document.getElementById('conn-btn').addEventListener('click', () => { mqttConnected ? mqttDisconnect() : mqttConnect(); });
+document.getElementById('btn-lights-off').addEventListener('click', () => { if(!mqttConnected) mqttConnect().then(lightsOff); else lightsOff(); });
+
+/* ── State + undo/redo ───────────────────────────────────────────────── */
+const STORAGE_KEY  = 'joseph_led_finetune_v2';
+const MAX_HISTORY  = 60;
+const historyStack = [];
+let   histIdx      = -1;
+let   placed       = {};
+let   selected     = new Set();
+
+/* ── Paint colors ─────────────────────────────────────────────────────── */
+const PALETTE = [
+  'ffffff', 'ff3030', 'ff8000', 'ffd400',
+  '40ff40', '00d4d4', '3070ff', '6020ff',
+  'd040ff', 'ff40b0', 'ff80c0', '203050'
+];
+let currentColor = PALETTE[0];
+const paint = {}; // idx -> hex color (no leading #), absent/undefined = unpainted
+
+function renderPalette() {
+  const pal = document.getElementById('palette');
+  pal.innerHTML = '';
+  PALETTE.forEach((hex) => {
+    const s = document.createElement('button');
+    s.className = 'swatch';
+    s.style.background = '#' + hex;
+    if (hex === currentColor) s.classList.add('active');
+    s.addEventListener('click', () => {
+      currentColor = hex;
+      document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+    });
+    pal.appendChild(s);
+  });
+  const custom = document.createElement('label');
+  custom.className = 'swatch custom-swatch';
+  custom.title = 'custom color';
+  const input = document.createElement('input');
+  input.type = 'color';
+  input.value = '#' + currentColor;
+  input.addEventListener('input', (e) => {
+    currentColor = e.target.value.replace('#','').toLowerCase();
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+    custom.classList.add('active');
+  });
+  custom.appendChild(input);
+  pal.appendChild(custom);
+}
+renderPalette();
+
+function paintDot(idx) {
+  if (paint[idx] === currentColor) delete paint[idx]; else paint[idx] = currentColor;
+  applyPaintStyle(idx);
+}
+function applyPaintStyle(idx) {
+  const gr = svg.querySelector('[data-index="'+idx+'"]');
+  if (!gr) return;
+  const c = paint[idx];
+  gr.classList.toggle('painted', !!c);
+  gr.style.color = c ? '#'+c : '';
+}
+function hsvToHex(h) {
+  const c = document.createElement('canvas'); // cheap HSL->hex via CSS
+  const el = document.createElement('div');
+  el.style.color = 'hsl(' + h + ',85%,55%)';
+  document.body.appendChild(el);
+  const rgb = getComputedStyle(el).color.match(/\d+/g).map(Number);
+  document.body.removeChild(el);
+  return rgb.map(v => v.toString(16).padStart(2,'0')).join('');
+}
+
+document.getElementById('btn-send-colors').addEventListener('click', () => {
+  if (!mqttConnected) mqttConnect().then(() => sendColorMap(paint)); else sendColorMap(paint);
+});
+document.getElementById('btn-clear-colors').addEventListener('click', () => {
+  for (const k in paint) delete paint[k];
+  for (let i = 0; i < LED_COUNT; i++) applyPaintStyle(i);
+  if (!mqttConnected) mqttConnect().then(lightsOff); else lightsOff();
+});
+document.getElementById('btn-rainbow').addEventListener('click', () => {
+  const activeIdx = [];
+  for (let i = 0; i < LED_COUNT; i++) if (!isInactive(placed[i])) activeIdx.push(i);
+  activeIdx.forEach((idx, n) => {
+    paint[idx] = hsvToHex(Math.round((n / activeIdx.length) * 360));
+    applyPaintStyle(idx);
+  });
+  if (!mqttConnected) mqttConnect().then(() => sendColorMap(paint)); else sendColorMap(paint);
+});
+document.getElementById('btn-paint-selected').addEventListener('click', () => {
+  selected.forEach(idx => { paint[idx] = currentColor; applyPaintStyle(idx); });
+});
+
+function loadPlaced() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    placed = s ? JSON.parse(s) : {};
+  } catch { placed = {}; }
+  for (let i = 0; i < LED_COUNT; i++) {
+    if (!placed[i]) placed[i] = { x: SEED_POSITIONS[i].x, y: SEED_POSITIONS[i].y };
+  }
+}
+function savePlaced() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(placed)); } catch {}
+}
+function snapshot(label) {
+  historyStack.splice(histIdx+1);
+  if (historyStack.length >= MAX_HISTORY) historyStack.shift(); else histIdx++;
+  historyStack.push({ placed: JSON.parse(JSON.stringify(placed)), label: label || 'change' });
+  histIdx = historyStack.length - 1;
+  savePlaced();
+  updateHistUI();
+}
+function applyHistory(idx) {
+  placed = JSON.parse(JSON.stringify(historyStack[idx].placed));
+  savePlaced(); renderPlaced(); updateHistUI();
+}
+function undo() { if (histIdx > 0) applyHistory(--histIdx); }
+function redo() { if (histIdx < historyStack.length - 1) applyHistory(++histIdx); }
+function updateHistUI() {
+  document.getElementById('btn-undo').disabled = histIdx <= 0;
+  document.getElementById('btn-redo').disabled = histIdx >= historyStack.length - 1;
+  const entry = historyStack[histIdx];
+  document.getElementById('hist-label').textContent =
+    entry ? (histIdx+1)+'/'+historyStack.length+' — '+entry.label : 'no history yet';
+}
+document.getElementById('btn-undo').addEventListener('click', undo);
+document.getElementById('btn-redo').addEventListener('click', redo);
+document.addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key==='z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+  if ((e.metaKey||e.ctrlKey) && e.key==='y') { e.preventDefault(); redo(); }
+});
+
+loadPlaced();
+
+/* ── SVG helpers ──────────────────────────────────────────────────────── */
+const svg = document.getElementById('editor-canvas');
+function svgCoords(cx, cy) {
+  const pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+/* ── Render ───────────────────────────────────────────────────────────── */
+// LEDs 0 and 1 are permanently dead hardware slots (not two of the spare/candidate
+// slots) — kept in the exported array so downstream indices stay aligned with the
+// physical strip, but hidden from the canvas since they'll never be placed.
+const HIDDEN_LEDS = new Set([0, 1]);
+
+function renderPlaced() {
+  const g = document.getElementById('placed-dots');
+  g.innerHTML = '';
+  for (let idx = 0; idx < LED_COUNT; idx++) {
+    if (HIDDEN_LEDS.has(idx)) continue;
+    const pos = placed[idx];
+    const inactive = isInactive(pos);
+    const gr = document.createElementNS('http://www.w3.org/2000/svg','g');
+    gr.setAttribute('class', 'placed-group' + (inactive ? ' inactive' : '') + (selected.has(idx) ? ' selected' : ''));
+    gr.setAttribute('data-index', idx);
+
+    const hit = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hit.setAttribute('class','placed-hit');
+    hit.setAttribute('cx',pos.x); hit.setAttribute('cy',pos.y); hit.setAttribute('r', 40);
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('class','placed-circle');
+    circle.setAttribute('cx',pos.x); circle.setAttribute('cy',pos.y); circle.setAttribute('r', 22);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('class','placed-label');
+    label.setAttribute('x',pos.x); label.setAttribute('y',pos.y);
+    label.textContent = idx;
+
+    gr.appendChild(hit); gr.appendChild(circle); gr.appendChild(label);
+    g.appendChild(gr);
+    applyPaintStyle(idx);
+  }
+  updateSelectionUI();
+}
+function updateDotEl(idx) {
+  const gr = svg.querySelector('[data-index="'+idx+'"]');
+  if (!gr || !placed[idx]) return;
+  const { x, y } = placed[idx];
+  gr.querySelectorAll('circle').forEach(c => { c.setAttribute('cx',x); c.setAttribute('cy',y); });
+  const t = gr.querySelector('text'); if (t) { t.setAttribute('x',x); t.setAttribute('y',y); }
+  gr.classList.toggle('inactive', isInactive(placed[idx]));
+}
+
+/* ── Selection ────────────────────────────────────────────────────────── */
+function updateSelectionUI() {
+  document.getElementById('selection-count').textContent = selected.size + ' selected';
+  document.getElementById('btn-light-selected').disabled = selected.size === 0;
+  document.getElementById('btn-paint-selected').disabled = selected.size === 0;
+  document.getElementById('btn-clear-selection').disabled = selected.size === 0;
+}
+document.getElementById('btn-clear-selection').addEventListener('click', () => {
+  selected.forEach(idx => svg.querySelector('[data-index="'+idx+'"]')?.classList.remove('selected'));
+  selected.clear();
+  updateSelectionUI();
+});
+document.getElementById('btn-light-selected').addEventListener('click', () => {
+  const ids = [...selected];
+  if (!mqttConnected) mqttConnect().then(() => lightSet(ids)); else lightSet(ids);
+});
+
+/* ── Drag placed dots — dragged dot glows white, others stay visible ───── */
+let dragging = null, dragOff = { x:0, y:0 }, dragMoved = false;
+
+function startDrag(idx, cx, cy) {
+  const sp = svgCoords(cx, cy);
+  dragging = idx; dragMoved = false;
+  dragOff = { x: placed[idx].x - sp.x, y: placed[idx].y - sp.y };
+
+  const gr = svg.querySelector('[data-index="'+idx+'"]');
+  if (gr) { gr.classList.add('dragging'); gr.parentNode.appendChild(gr); } // bring to front
+  document.querySelectorAll('.placed-group').forEach(other => {
+    if (parseInt(other.dataset.index) !== idx) other.classList.add('peer-dim');
+  });
+  if (!mqttConnected) mqttConnect().then(() => lightOnlyLED(idx)); else lightOnlyLED(idx);
+}
+function moveDrag(cx, cy) {
+  if (dragging === null) return;
+  dragMoved = true;
+  const sp = svgCoords(cx, cy);
+  placed[dragging] = { x: +(sp.x + dragOff.x).toFixed(2), y: +(sp.y + dragOff.y).toFixed(2) };
+  updateDotEl(dragging);
+}
+function endDrag() {
+  if (dragging === null) return;
+  const idx = dragging;
+  svg.querySelector('[data-index="'+idx+'"]')?.classList.remove('dragging');
+  document.querySelectorAll('.placed-group.peer-dim').forEach(el => el.classList.remove('peer-dim'));
+
+  if (dragMoved) {
+    snapshot('move LED ' + idx);
+    lightsOff();
+  } else {
+    paintDot(idx);
+    lightsOff();
+  }
+  dragging = null;
+}
+
+/* ── Brush painting ──────────────────────────────────────────────────── */
+let brushMode = false;
+let brushErasing = false;
+let brushing = false;
+const BRUSH_RADIUS = 45;
+const brushCursorEl = document.getElementById('brush-cursor');
+brushCursorEl.setAttribute('r', BRUSH_RADIUS);
+
+function setBrushMode(on) {
+  brushMode = on;
+  document.getElementById('btn-brush').classList.toggle('active', on);
+  document.getElementById('btn-brush').textContent = 'brush mode: ' + (on ? 'on' : 'off');
+  document.getElementById('mode-move-hint').style.display = on ? 'none' : '';
+  document.getElementById('mode-brush-hint').style.display = on ? '' : 'none';
+  brushCursorEl.style.display = 'none';
+}
+document.getElementById('btn-brush').addEventListener('click', () => setBrushMode(!brushMode));
+
+function setEraser(on) {
+  brushErasing = on;
+  document.getElementById('btn-eraser').classList.toggle('active', on);
+}
+document.getElementById('btn-eraser').addEventListener('click', () => setEraser(!brushErasing));
+
+function paintAt(cx, cy) {
+  const sp = svgCoords(cx, cy);
+  for (let idx = 0; idx < LED_COUNT; idx++) {
+    if (HIDDEN_LEDS.has(idx)) continue;
+    const p = placed[idx];
+    const dx = p.x - sp.x, dy = p.y - sp.y;
+    if (dx*dx + dy*dy <= BRUSH_RADIUS*BRUSH_RADIUS) {
+      if (brushErasing) delete paint[idx]; else paint[idx] = currentColor;
+      applyPaintStyle(idx);
+    }
+  }
+}
+function moveBrushCursor(cx, cy) {
+  const sp = svgCoords(cx, cy);
+  brushCursorEl.setAttribute('cx', sp.x);
+  brushCursorEl.setAttribute('cy', sp.y);
+  brushCursorEl.style.display = 'block';
+  brushCursorEl.style.stroke = brushErasing ? '#f87171' : ('#' + currentColor);
+}
+function startBrush(cx, cy) { brushing = true; moveBrushCursor(cx, cy); paintAt(cx, cy); }
+function moveBrush(cx, cy) { moveBrushCursor(cx, cy); if (brushing) paintAt(cx, cy); }
+function endBrush() { brushing = false; }
+
+svg.addEventListener('mousedown', e => {
+  if (brushMode) { e.preventDefault(); startBrush(e.clientX, e.clientY); return; }
+  const gr = e.target.closest('.placed-group');
+  if (gr) { e.preventDefault(); startDrag(parseInt(gr.dataset.index), e.clientX, e.clientY); return; }
+  startBoxSelect(e.clientX, e.clientY);
+});
+document.addEventListener('mousemove', e => {
+  if (brushMode) { moveBrush(e.clientX, e.clientY); return; }
+  moveDrag(e.clientX, e.clientY); moveBoxSelect(e.clientX, e.clientY);
+});
+document.addEventListener('mouseup', e => { endBrush(); endDrag(); endBoxSelect(); });
+svg.addEventListener('mouseleave', () => { if (brushMode && !brushing) brushCursorEl.style.display = 'none'; });
+
+svg.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  if (brushMode) { e.preventDefault(); startBrush(t.clientX, t.clientY); return; }
+  const gr = e.target.closest('.placed-group');
+  if (gr) { e.preventDefault(); startDrag(parseInt(gr.dataset.index), t.clientX, t.clientY); return; }
+  e.preventDefault(); startBoxSelect(t.clientX, t.clientY);
+}, { passive:false });
+document.addEventListener('touchmove', e => {
+  if (brushMode) { e.preventDefault(); const t = e.touches[0]; moveBrush(t.clientX, t.clientY); return; }
+  if (dragging === null && !boxSelecting) return; e.preventDefault();
+  const t = e.touches[0]; moveDrag(t.clientX, t.clientY); moveBoxSelect(t.clientX, t.clientY);
+}, { passive:false });
+document.addEventListener('touchend', () => { endBrush(); endDrag(); endBoxSelect(); });
+
+/* ── Box select on empty canvas ──────────────────────────────────────── */
+let boxSelecting = false, boxStart = null;
+const selectRectEl = document.getElementById('select-rect');
+
+function startBoxSelect(cx, cy) {
+  boxSelecting = true;
+  boxStart = svgCoords(cx, cy);
+  selectRectEl.style.display = 'block';
+  setRectAttrs(boxStart.x, boxStart.y, 0, 0);
+}
+function setRectAttrs(x, y, w, h) {
+  selectRectEl.setAttribute('x', Math.min(x, x+w));
+  selectRectEl.setAttribute('y', Math.min(y, y+h));
+  selectRectEl.setAttribute('width', Math.abs(w));
+  selectRectEl.setAttribute('height', Math.abs(h));
+}
+function moveBoxSelect(cx, cy) {
+  if (!boxSelecting) return;
+  const sp = svgCoords(cx, cy);
+  setRectAttrs(boxStart.x, boxStart.y, sp.x - boxStart.x, sp.y - boxStart.y);
+}
+function endBoxSelect() {
+  if (!boxSelecting) return;
+  boxSelecting = false;
+  const rx = parseFloat(selectRectEl.getAttribute('x'));
+  const ry = parseFloat(selectRectEl.getAttribute('y'));
+  const rw = parseFloat(selectRectEl.getAttribute('width'));
+  const rh = parseFloat(selectRectEl.getAttribute('height'));
+  selectRectEl.style.display = 'none';
+  if (rw < 4 && rh < 4) return; // treat as a stray click, not a real box
+
+  selected.clear();
+  for (let idx = 0; idx < LED_COUNT; idx++) {
+    if (HIDDEN_LEDS.has(idx)) continue;
+    const p = placed[idx];
+    if (p.x >= rx && p.x <= rx+rw && p.y >= ry && p.y <= ry+rh) selected.add(idx);
+  }
+  document.querySelectorAll('.placed-group').forEach(gr => {
+    gr.classList.toggle('selected', selected.has(parseInt(gr.dataset.index)));
+  });
+  updateSelectionUI();
+}
+
+/* ── Export / Reset ──────────────────────────────────────────────────── */
+document.getElementById('btn-export').addEventListener('click', () => {
+  const lines = [];
+  for (let i = 0; i < LED_COUNT; i++) {
+    const p = placed[i];
+    const inactive = isInactive(p);
+    lines.push('  {x:' + p.x.toFixed(2).padStart(8) + ', y:' + p.y.toFixed(2).padStart(8) + '}, // ' +
+      String(i).padStart(2) + (inactive ? ' ← inactive' : ''));
+  }
+  const out = 'const LED_POSITIONS = [\n' + lines.join('\n') + '\n];';
+  document.getElementById('output-textarea').value = out;
+  document.getElementById('output-wrap').classList.add('visible');
+  document.getElementById('output-wrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('Discard changes since your last export (or the original seed if you never exported) and clear history?')) return;
+  placed = {};
+  for (let i = 0; i < LED_COUNT; i++) placed[i] = { x: SEED_POSITIONS[i].x, y: SEED_POSITIONS[i].y };
+  selected.clear();
+  historyStack.length = 0; histIdx = -1;
+  localStorage.removeItem(STORAGE_KEY);
+  renderPlaced(); updateHistUI();
+  document.getElementById('output-wrap').classList.remove('visible');
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(document.getElementById('output-textarea').value).then(() => {
+    const c = document.getElementById('copy-confirm'); c.classList.add('show');
+    setTimeout(() => c.classList.remove('show'), 2000);
+  });
+});
+
+/* ── Init ─────────────────────────────────────────────────────────────── */
+renderPlaced();
+snapshot('initial (from index.html + 2 spare slots)');
+</script>
+</body>
+</html>

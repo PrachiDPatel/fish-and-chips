@@ -82,6 +82,7 @@
   <button class="tab-btn active" data-tab="modes">modes</button>
   <button class="tab-btn" data-tab="pixels">pixels</button>
   <button class="tab-btn" data-tab="snake">snake</button>
+  <button class="tab-btn" data-tab="hotcold">hot/cold</button>
 </div>
 
 <!-- ===== Modes tab ===== -->
@@ -99,15 +100,15 @@
       <path d="M 23 36 Q 17 40 12 44" stroke="currentColor" stroke-width="0.7" fill="none" stroke-linecap="round"/>
       <circle cx="33" cy="28" r="1.4" fill="#020617"/>
     </svg>
-    <button class="arc-item arc-1" data-preset="3" data-name="happy">
+    <button class="arc-item arc-1" data-preset="3" data-name="love">
       <span class="arc-icon">😊</span>
       <span class="arc-label">happy</span>
     </button>
-    <button class="arc-item arc-2" data-preset="19" data-name="shock">
+    <button class="arc-item arc-2" data-preset="19" data-name="zoo wee mama">
       <span class="arc-icon">🫨</span>
       <span class="arc-label">shock</span>
     </button>
-    <button class="arc-item arc-3" data-preset="2" data-name="neutral">
+    <button class="arc-item arc-3" data-preset="2" data-name="yearning">
       <span class="arc-icon">😐</span>
       <span class="arc-label">neutral</span>
     </button>
@@ -138,10 +139,10 @@
   </div>
 
   <div class="morse-section">
-    <button class="morse-btn" data-preset="9" data-name="hey">
+    <button class="morse-btn" data-preset="9" data-name="ily">
       <div class="morse-icon">✉️</div>
       <div class="morse-body">
-        <div class="morse-code">···· · -·--</div>
+        <div class="morse-code">·· ·-·· -·--</div>
       </div>
       <div class="morse-arrow">→</div>
     </button>
@@ -182,13 +183,21 @@
       <image id="pleco-outline" href="pleco-outline.png" x="0" y="0" width="1920" height="1920" preserveAspectRatio="xMidYMid meet"/>
       <!-- LEDs (48) injected by JS -->
       <g id="leds"></g>
+      <circle id="brush-cursor" cx="0" cy="0" r="45"/>
     </svg>
   </div>
 
   <div class="pixel-actions">
+    <button class="btn-eraser" id="btn-eraser">eraser</button>
     <button class="btn-clear" id="btn-clear">clear</button>
     <button class="btn-send" id="btn-send-pixels">send →</button>
   </div>
+  <div class="spell-row">
+    <input class="spell-input" id="spell-input" type="text" maxlength="8" placeholder="type a word…" autocapitalize="characters" autocomplete="off"/>
+    <button class="btn-spell" id="btn-spell">draw</button>
+  </div>
+  <div class="spell-note">best-effort — joseph's LEDs aren't a grid, so letters will look rough</div>
+  <button id="btn-dot-map" class="dot-map-btn">download dot map svg</button>
 </div>
 
 <!-- ===== Snake tab ===== -->
@@ -214,6 +223,25 @@
   </div>
 
   <div class="snake-status" id="snake-status">tap start · connect first</div>
+</div>
+
+<!-- ===== Hot/cold tab ===== -->
+<div class="tab-panel" id="tab-hotcold">
+  <div class="pixel-intro">hot &amp; cold</div>
+  <div class="pixel-sub">one hides a light, the other hunts it down — open this tab on two phones</div>
+
+  <div class="hc-status" id="hc-status">tap "new round" — whoever taps becomes the hider</div>
+
+  <div class="canvas-wrap">
+    <svg id="hc-canvas" viewBox="0 300 1920 1200" xmlns="http://www.w3.org/2000/svg">
+      <image href="pleco-outline.png" x="0" y="0" width="1920" height="1920" preserveAspectRatio="xMidYMid meet" style="opacity:.9; filter:drop-shadow(0 0 6px rgba(34,211,238,.55));"/>
+      <g id="hc-dots"></g>
+    </svg>
+  </div>
+
+  <div class="pixel-actions">
+    <button class="btn-clear" id="hc-new-round">new round</button>
+  </div>
 </div>
 
 <div class="log-wrap">
@@ -258,6 +286,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/pixels.js"></script>
+<script src="js/hotcold.js"></script>
 <script src="js/snake.js"></script>
 <script src="js/calib.js"></script>
 </body>

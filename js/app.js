@@ -1,5 +1,6 @@
 const BROKER = 'wss://broker.emqx.io:8084/mqtt';
 const TOPIC = 'wled/b6fba0/api';
+const HOTCOLD_TOPIC = 'wled/b6fba0/hotcold';
 let client = null;
 let connected = false;
 let lightOn = false;
@@ -46,7 +47,15 @@ function connectBroker() {
       setStatus('success', 'connected');
       addLog('connected — ready to send', 'ok');
       setPowerUI(lightOn ? 'on' : null);
+      try { client.subscribe(HOTCOLD_TOPIC, { qos: 0 }); } catch {}
       resolve();
+    });
+    client.on('message', (topic, payload) => {
+      if (topic !== HOTCOLD_TOPIC) return;
+      try {
+        hcState = JSON.parse(payload.toString());
+        hcRender(); hcUpdateStatus(); hcSendLEDs();
+      } catch {}
     });
     client.on('error', (e) => {
       connected = false;
