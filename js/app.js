@@ -175,8 +175,9 @@ addTapListener(document.getElementById('custom-send'), async () => {
   if (ok) { lightOn = true; setPowerUI('on'); setActivePreset(val); }
 });
 
-/* All tappable preset surfaces: arc items, preset buttons, day buttons, morse */
-document.querySelectorAll('.arc-item, .preset-btn, .day-btn, .morse-btn').forEach(btn => {
+/* All tappable preset surfaces: arc items, preset buttons, day buttons, morse
+ * (the good night button has its own handler — it also hands off to the tracker) */
+document.querySelectorAll('.arc-item, .preset-btn, .day-btn:not(.goodnight), .morse-btn').forEach(btn => {
   addTapListener(btn, async (e) => {
     if (!(await ensureConnected())) return;
     if (e && e.touches && e.touches[0]) {
@@ -192,4 +193,13 @@ document.querySelectorAll('.arc-item, .preset-btn, .day-btn, .morse-btn').forEac
       else setActivePreset(btn.dataset.preset);
     }
   });
+});
+
+/* Good night: set the evening lights, then hand off to the sleep tracker demo */
+addTapListener(document.getElementById('goodnight-btn'), async () => {
+  if (!(await ensureConnected())) return;
+  const ok = await sendPreset(14, 'good evening');
+  if (ok) { lightOn = true; setPowerUI('on'); setActivePreset(14); }
+  addLog('off to the sleep tracker \u2192', 'ok');
+  setTimeout(() => { window.location.href = 'https://prachidpatel.github.io/fish-and-chips-sleep-tracker/'; }, 700);
 });

@@ -25,7 +25,7 @@ Can be used from any device, especially designed with mobile in mind.
 </div>
 
 - **Mood presets** — love, yearning, sad, angry, livid, and a few others
-- **Time presets** — good morning and good evening
+- **Time presets** — good morning and good evening, plus a good night button that sets the evening lights and hands off to the [sleep tracker demo](https://prachidpatel.github.io/fish-and-chips-sleep-tracker/)
 - **Pixel painter** — draw a custom pattern directly onto the LED grid and push it live. Press-drag to paint with a brush, eraser mode, a custom color picker, and a word-drawer that renders text across the LEDs (best-effort — they aren't a grid)
 - **Hot & cold** — a two-phone hide-and-seek game: one person hides a light on joseph, the other hunts it down with red-hot / ice-cold hints. Game state syncs live over MQTT
 - **Snake** — yes there is a snake game on the fish
