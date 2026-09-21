@@ -42,8 +42,8 @@ function connectBroker() {
     setStatus('sending', 'connecting...');
     setPowerUI('connecting');
     addLog('connecting...', 'info');
-    const id = 'orion_' + Math.random().toString(16).substr(2,8);
-    client = mqtt.connect(BROKER, { clientId: id, clean: true, connectTimeout: 10000, reconnectPeriod: 0 });
+    const id = 'fish_' + Math.random().toString(16).substr(2,8);
+    client = mqtt.connect(BROKER, { clientId: id, clean: true, connectTimeout: 10000, reconnectPeriod: 3000 });
     client.on('connect', () => {
       connected = true;
       setStatus('success', 'connected');
@@ -69,10 +69,14 @@ function connectBroker() {
     client.on('close', () => {
       if (connected) {
         connected = false; lightOn = false;
-        setStatus('error', 'disconnected');
-        setPowerUI(null);
-        addLog('disconnected', 'err');
+        setStatus('sending', 'reconnecting\u2026');
+        setPowerUI('connecting');
+        addLog('connection lost \u2014 retrying\u2026', 'err');
       }
+    });
+    client.on('reconnect', () => {
+      setStatus('sending', 'reconnecting\u2026');
+      setPowerUI('connecting');
     });
   });
 }
@@ -82,9 +86,11 @@ function publish(payload) {
     client.publish(TOPIC, payload, {qos: 0}, (err) => { if (err) reject(err); else resolve(); });
   });
 }
+let connectPromise = null;
 async function ensureConnected() {
   if (connected) return true;
-  try { await connectBroker(); return true; } catch { return false; }
+  if (!connectPromise) connectPromise = connectBroker().finally(() => { connectPromise = null; });
+  try { await connectPromise; return true; } catch { return false; }
 }
 
 async function sendPreset(num, name) {
@@ -206,3 +212,88 @@ document.querySelectorAll('.arc-item, .preset-btn, .day-btn, .morse-btn').forEac
     setTimeout(() => { window.location.href = 'https://prachidpatel.github.io/fish-and-chips-sleep-tracker/'; }, 700);
   });
 });
+
+/* ===== game fullscreen: expand / minimize / rotate (hot/cold + snake) ===== */
+const gameFs = { open: false, rotated: false, tab: null, moved: [] };
+
+function gameFsFit() {
+  if (!gameFs.open) return;
+  const stage = document.getElementById('game-fs-stage');
+  const svg = stage.querySelector('svg');
+  if (!svg || !svg.viewBox || !svg.viewBox.baseVal) return;
+  const vb = svg.viewBox.baseVal;
+  const a = vb.width / vb.height;
+  const vw = stage.clientWidth, vh = stage.clientHeight;
+  let w, h;
+  if (stage.classList.contains('rotated')) {
+    // after a 90deg turn the svg's height runs horizontally: fit h_svg<=vw, w_svg<=vh
+    h = Math.min(vw, vh / a);
+    w = a * h;
+  } else {
+    const s = Math.min(vw / vb.width, vh / vb.height);
+    w = vb.width * s; h = vb.height * s;
+  }
+  svg.style.width = Math.floor(w) + 'px';
+  svg.style.height = Math.floor(h) + 'px';
+}
+
+function gameFsMove(node, dest) {
+  gameFs.moved.push({ node, parent: node.parentNode, next: node.nextSibling });
+  dest.appendChild(node);
+}
+
+function gameFsOpen(tab) {
+  if (gameFs.open) return;
+  gameFs.open = true; gameFs.tab = tab; gameFs.moved = [];
+  const stage = document.getElementById('fs-rot');
+  const controls = document.getElementById('game-fs-controls');
+  const title = document.getElementById('game-fs-title');
+  if (tab === 'hotcold') {
+    title.textContent = 'hot & cold';
+    gameFsMove(document.querySelector('#tab-hotcold .canvas-wrap'), stage);
+    gameFsMove(document.querySelector('#tab-hotcold .pixel-actions'), controls);
+    HC_DOT_SCALE = 1.7;
+    hcRender();
+  } else {
+    title.textContent = 'snake';
+    gameFsMove(document.querySelector('#tab-snake .snake-grid'), stage);
+    gameFsMove(document.querySelector('#tab-snake .snake-score-row'), controls);
+    gameFsMove(document.querySelector('#tab-snake .dpad'), controls);
+  }
+  document.getElementById('game-fs').classList.add('open');
+  document.getElementById('game-fs').setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(gameFsFit);
+}
+
+function gameFsClose() {
+  if (!gameFs.open) return;
+  for (let i = gameFs.moved.length - 1; i >= 0; i--) {
+    const m = gameFs.moved[i];
+    m.parent.insertBefore(m.node, m.next);
+  }
+  gameFs.moved = [];
+  gameFs.open = false; gameFs.tab = null;
+  document.getElementById('game-fs-stage').classList.remove('rotated');
+  gameFs.rotated = false;
+  const stage = document.getElementById('fs-rot');
+  const svg = stage.querySelector('svg');
+  if (svg) { svg.style.width = ''; svg.style.height = ''; }
+  document.getElementById('game-fs').classList.remove('open');
+  document.getElementById('game-fs').setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (typeof HC_DOT_SCALE !== 'undefined' && HC_DOT_SCALE !== 1) { HC_DOT_SCALE = 1; hcRender(); }
+}
+
+function gameFsToggleRotate() {
+  if (!gameFs.open) return;
+  gameFs.rotated = !gameFs.rotated;
+  document.getElementById('game-fs-stage').classList.toggle('rotated', gameFs.rotated);
+  requestAnimationFrame(gameFsFit);
+}
+
+addTapListener(document.getElementById('snake-expand'), () => gameFsOpen('snake'));
+addTapListener(document.getElementById('game-fs-close'), gameFsClose);
+addTapListener(document.getElementById('game-fs-rotate'), gameFsToggleRotate);
+window.addEventListener('resize', gameFsFit);
+window.addEventListener('orientationchange', () => setTimeout(gameFsFit, 300));

@@ -221,7 +221,10 @@
 
   <div class="snake-score-row">
     <div class="snake-score">score: <span id="snake-score">0</span></div>
-    <button class="snake-start-btn" id="snake-start">start</button>
+    <div>
+      <button class="snake-start-btn" id="snake-start">start</button>
+      <button class="snake-start-btn game-expand-btn" id="snake-expand">expand</button>
+    </div>
   </div>
 
   <div class="snake-grid" id="snake-grid"></div>
@@ -244,7 +247,13 @@
   <div class="pixel-intro">hot &amp; cold</div>
   <div class="pixel-sub">one hides a light, the other hunts it down — open this tab on two phones</div>
 
-  <div class="hc-status" id="hc-status">tap "new round" — whoever taps becomes the hider</div>
+  <div class="hc-status" id="hc-status">tap "new round" — whoever taps hides first</div>
+
+  <div class="hc-legend">
+    <span><i class="hc-sw" style="background:#ffffff"></i>hidden spot</span>
+    <span><i class="hc-sw hc-sw-rainbow"></i>guesses · red hot → purple cold</span>
+    <span>the led fish glows along live</span>
+  </div>
 
   <div class="canvas-wrap">
     <svg id="hc-canvas" viewBox="0 300 1920 1200" xmlns="http://www.w3.org/2000/svg">
@@ -255,6 +264,7 @@
 
   <div class="pixel-actions">
     <button class="btn-clear" id="hc-new-round">new round</button>
+    <button class="btn-clear game-expand-btn" id="hc-expand">expand</button>
   </div>
 </div>
 
@@ -295,6 +305,18 @@
       colors cycle red → blue → green so neighbours look different.
     </div>
   </div>
+</div>
+
+<div class="game-fs" id="game-fs" aria-hidden="true">
+  <div class="game-fs-top">
+    <div class="game-fs-title" id="game-fs-title">hot &amp; cold</div>
+    <div class="game-fs-topbtns">
+      <button class="game-fs-btn" id="game-fs-rotate">rotate</button>
+      <button class="game-fs-btn" id="game-fs-close">done</button>
+    </div>
+  </div>
+  <div class="game-fs-stage" id="game-fs-stage"><div id="fs-rot"></div></div>
+  <div class="game-fs-controls" id="game-fs-controls"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>

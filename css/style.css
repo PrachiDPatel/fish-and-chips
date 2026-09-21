@@ -934,6 +934,42 @@
   #hc-canvas { width: 100%; height: auto; display: block; }
   .hc-status { text-align: center; font-size: 0.85rem; color: var(--cyan-soft); margin-bottom: 0.85rem; min-height: 1.2em; }
   .hc-status.won { color: #6ee7b7; }
+  .hc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center;
+    align-items: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
+  .hc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .hc-sw { width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+    border: 1px solid rgba(255,255,255,0.35); }
+  .hc-sw-rainbow { width: 56px; border-radius: 6px; border: none;
+    background: linear-gradient(to right,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0000ff,#800080); }
+
+  /* Game fullscreen (hot/cold + snake): bigger tap targets, optional rotation */
+  .game-expand-btn { margin-left: 0.5rem; }
+  .game-fs { position: fixed; inset: 0; z-index: 300; background: rgba(2, 6, 23, 0.97);
+    display: none; flex-direction: column; }
+  .game-fs.open { display: flex; }
+  .game-fs-top { display: flex; justify-content: space-between; align-items: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 8px; flex: none; }
+  .game-fs-title { font-size: 0.95rem; color: #7dd3fc; letter-spacing: 0.04em; }
+  .game-fs-topbtns { display: flex; gap: 10px; }
+  .game-fs-btn { min-width: 72px; min-height: 46px; padding: 10px 16px; border-radius: 12px;
+    background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3);
+    color: #cffafe; font-size: 0.95rem; cursor: pointer; touch-action: manipulation; }
+  .game-fs-btn:active { background: rgba(34, 211, 238, 0.2); }
+  .game-fs-stage { flex: 1; min-height: 0; display: flex; align-items: center;
+    justify-content: center; overflow: hidden; padding: 4px 10px; }
+  .game-fs-stage .canvas-wrap { margin: 0; width: auto; }
+  #fs-rot { display: flex; align-items: center; justify-content: center; }
+  .game-fs-stage.rotated #fs-rot { transform: rotate(90deg); }
+  .game-fs-controls { flex: none; display: flex; flex-direction: column; align-items: center;
+    gap: 12px; padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+  .game-fs-controls .pixel-actions { margin: 0; }
+  .game-fs .dpad { gap: 10px; }
+  .game-fs .dpad-middle { gap: 10px; }
+  .game-fs .dpad-btn { width: 78px; height: 78px; font-size: 1.5rem; border-radius: 18px; }
+  .game-fs .dpad-center { width: 78px; height: 78px; }
+  .game-fs .btn-clear, .game-fs .snake-start-btn { min-height: 54px; font-size: 1.05rem; padding: 12px 28px; }
+  .game-fs .snake-score-row { width: 100%; max-width: 420px; }
+  .game-fs .snake-grid { width: min(94vw - 32px, 52vh); margin-bottom: 0; }
 
   /* Log */
   .log-wrap { width: 100%; max-width: 380px; margin-top: 1.5rem; margin-bottom: 1rem; }
