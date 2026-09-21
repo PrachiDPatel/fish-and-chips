@@ -25,11 +25,11 @@ function addLog(msg, type) {
   l.scrollTop = l.scrollHeight;
 }
 function setActivePreset(num) {
-  document.querySelectorAll('.preset-btn, .arc-item, .day-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.preset-btn, .arc-item, .day-btn, .tracker-btn').forEach(b => b.classList.remove('active'));
   if (num != null) {
     const sel = '[data-preset="' + num + '"]';
     document.querySelectorAll(sel).forEach(b => {
-      if (b.classList.contains('preset-btn') || b.classList.contains('arc-item') || b.classList.contains('day-btn')) {
+      if (b.classList.contains('preset-btn') || b.classList.contains('arc-item') || b.classList.contains('day-btn') || b.classList.contains('tracker-btn')) {
         b.classList.add('active');
       }
     });
@@ -176,8 +176,8 @@ addTapListener(document.getElementById('custom-send'), async () => {
 });
 
 /* All tappable preset surfaces: arc items, preset buttons, day buttons, morse
- * (the good night button has its own handler — it also hands off to the tracker) */
-document.querySelectorAll('.arc-item, .preset-btn, .day-btn:not(.goodnight), .morse-btn').forEach(btn => {
+ * (the sun/moon tracker buttons have their own handlers — they also hand off to the tracker) */
+document.querySelectorAll('.arc-item, .preset-btn, .day-btn, .morse-btn').forEach(btn => {
   addTapListener(btn, async (e) => {
     if (!(await ensureConnected())) return;
     if (e && e.touches && e.touches[0]) {
@@ -195,11 +195,14 @@ document.querySelectorAll('.arc-item, .preset-btn, .day-btn:not(.goodnight), .mo
   });
 });
 
-/* Good night: set the evening lights, then hand off to the sleep tracker demo */
-addTapListener(document.getElementById('goodnight-btn'), async () => {
-  if (!(await ensureConnected())) return;
-  const ok = await sendPreset(14, 'good evening');
-  if (ok) { lightOn = true; setPowerUI('on'); setActivePreset(14); }
-  addLog('off to the sleep tracker \u2192', 'ok');
-  setTimeout(() => { window.location.href = 'https://prachidpatel.github.io/fish-and-chips-sleep-tracker/'; }, 700);
+/* Sleep tracker handoff: Sun wakes the lights (good morning), Moon settles
+   them (good evening) — then both hand off to the sleep tracker. */
+[['tracker-sun', '13', 'good morning'], ['tracker-moon', '14', 'good evening']].forEach(([id, preset, name]) => {
+  addTapListener(document.getElementById(id), async () => {
+    if (!(await ensureConnected())) return;
+    const ok = await sendPreset(preset, name);
+    if (ok) { lightOn = true; setPowerUI('on'); setActivePreset(preset); }
+    addLog('off to the sleep tracker \u2192', 'ok');
+    setTimeout(() => { window.location.href = 'https://prachidpatel.github.io/fish-and-chips-sleep-tracker/'; }, 700);
+  });
 });

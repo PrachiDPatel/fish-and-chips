@@ -161,14 +161,20 @@
       <span class="day-sub">dusk · soft</span>
     </button>
   </div>
-  <button class="day-btn goodnight" id="goodnight-btn">
-    <span class="day-icon">🌙</span>
-    <span class="day-text">
-      <span class="day-name">good night</span>
-      <span class="day-sub">lights down · open sleep tracker</span>
-    </span>
-    <span class="day-icon" style="font-size:18px">→</span>
-  </button>
+  <div class="section-label">sleep tracker</div>
+  <div class="tracker-row">
+    <button class="tracker-btn" id="tracker-sun" data-preset="13" data-name="good morning" aria-label="wake up: good morning lights, then open sleep tracker">
+      <svg class="tracker-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"/>
+      </svg>
+    </button>
+    <button class="tracker-btn" id="tracker-moon" data-preset="14" data-name="good evening" aria-label="sleep: good evening lights, then open sleep tracker">
+      <svg class="tracker-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.5 14.3A8.7 8.7 0 0 1 9.7 3.5a8.7 8.7 0 1 0 10.8 10.8Z"/>
+      </svg>
+    </button>
+  </div>
 
   <div class="custom-section">
     <div class="custom-label">any preset</div>

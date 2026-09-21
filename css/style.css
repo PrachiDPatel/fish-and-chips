@@ -657,18 +657,36 @@
   }
   .day-btn.morning { --accent: rgba(251, 191, 36, 0.5); }
   .day-btn.evening { --accent: rgba(192, 132, 252, 0.55); }
-  .day-btn.goodnight {
-    --accent: rgba(148, 163, 255, 0.5);
+  /* ===== Sleep tracker handoff (sun / moon) ===== */
+  .tracker-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
     width: 100%;
-    margin-top: 10px;
-    min-height: 74px;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
+    margin-top: 2px;
   }
-  .day-btn.goodnight .day-icon { font-size: 24px; }
-  .day-btn.goodnight .day-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .tracker-btn {
+    background: linear-gradient(160deg, rgba(8, 47, 73, 0.40), rgba(2, 6, 23, 0.55));
+    border: 0.5px solid var(--accent, rgba(34, 211, 238, 0.3));
+    border-radius: 16px;
+    padding: 0.85rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none; appearance: none;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 18px -6px var(--accent), inset 0 1px 0 rgba(207, 250, 254, 0.06);
+    transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s;
+    min-height: 64px;
+    color: var(--text);
+  }
+  .tracker-btn:active { transform: scale(0.96); filter: brightness(1.5); }
+  .tracker-btn.active {
+    box-shadow: 0 0 22px -2px var(--accent), 0 0 48px -10px var(--accent), inset 0 1px 0 rgba(207, 250, 254, 0.1);
+  }
+  #tracker-sun { --accent: rgba(251, 191, 36, 0.45); color: #ffd9a0; }
+  #tracker-moon { --accent: rgba(147, 197, 253, 0.5); color: #bfe4ff; }
+  .tracker-icon { width: 30px; height: 30px; display: block; }
   .day-icon { font-size: 28px; line-height: 1; }
   .day-name {
     font-family: 'DM Serif Display', serif;
