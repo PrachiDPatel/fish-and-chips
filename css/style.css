@@ -460,6 +460,12 @@
     animation: none;
   }
   .arc-icon { font-size: 22px; line-height: 1; }
+  /* minimalist line icons replace emoji */
+  .arc-icon svg, .day-icon svg { width: 30px; height: 30px; display: block; }
+  .preset-icon svg, .morse-icon svg { width: 20px; height: 20px; display: block; }
+  .arc-item .arc-icon { color: var(--accent); }
+  .preset-icon svg, .morse-icon svg, .day-icon svg { color: #ffffff; }
+
   .arc-label {
     font-family: 'DM Serif Display', serif;
     font-size: 11px;
